@@ -1,8 +1,17 @@
-#include "scout/test.h"
+#include "scout/cli.h"
 #include <cstdlib>
+#include <exception>
+#include <print>
 
-int main()
+int main(int argc, char *argv[])
 {
-    greet();
+    try {
+        std::println("scout -- The free directory bruteforcer");
+
+        check_argument_count(argc);
+    } catch (const std::exception &e) {
+        std::println("ERROR: {}", e.what());
+    }
+
     return EXIT_SUCCESS;
 }

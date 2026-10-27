@@ -25,8 +25,8 @@ all: $(TARGET)
 
 $(TARGET): $(CXXOBJS)
 	@mkdir -p $(dir $@)
-	@echo "LD $< -> $@"
-	@$(LD) $(LDFLAGS) $< -o $@
+	@echo "LD $^ -> $@"
+	@$(LD) $(LDFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
