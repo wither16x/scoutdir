@@ -1,1 +1,0 @@
-scoutdir - Web directory bruteforcer

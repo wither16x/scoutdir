@@ -15,7 +15,7 @@ CXXFLAGS := -std=c++23 -Wall -Wextra -Wpedantic -Wshadow -Wundef -Wunused \
 		-Wcast-qual -Wconversion -Wsign-conversion -Wformat=2 -I$(INCLUDE_DIR)
 LDFLAGS := -fuse-ld=lld -lcurl
 
-.PHONY: all clean
+.PHONY: all install clean
 
 all: $(TARGET)
 
@@ -28,6 +28,9 @@ $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "CXX $< -> $@"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+install:
+	@cp -v $(TARGET) /usr/bin/scoutdir
 
 clean:
 	rm -rf $(BUILD_DIR)
