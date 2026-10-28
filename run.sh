@@ -3,6 +3,6 @@
 set -euo pipefail
 
 # change compiler if needed
-gcc scout.c -o scout
+gcc scoutdir.c -o scoutdir -lcurl
 
-./scout "$@"
+./scoutdir "$@"
