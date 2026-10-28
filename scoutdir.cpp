@@ -1,7 +1,8 @@
 #include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <fstream>
 #include <print>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 #include <curl/curl.h>
@@ -56,7 +57,9 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
 
-            curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "HEAD");
+            /* I used CURLOPT_CUSTOMREQUEST "HEAD" before, but the curl docs say that
+            * without this option, curl expects a body and could keep blocked */
+            curl_easy_setopt(curl_handle, CURLOPT_NOBODY, 1l);
             curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
             curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
@@ -66,10 +69,8 @@ int main(int argc, char *argv[])
                 curl_easy_setopt(curl_handle, CURLOPT_URL, new_url.c_str());
 
                 curl_res = curl_easy_perform(curl_handle);
-                if (curl_res != CURLE_OK) {
+                if (curl_res != CURLE_OK)
                     std::println(stderr, "\033[1;31mERROR\033[0m: {}", curl_easy_strerror(curl_res));
-                    return EXIT_FAILURE;
-                }
 
                 curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
