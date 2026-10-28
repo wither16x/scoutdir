@@ -1,1 +1,1 @@
-Scout - Web directory bruteforcer
+scoutdir - Web directory bruteforcer
