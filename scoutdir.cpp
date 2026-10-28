@@ -2,18 +2,25 @@
 #include <fstream>
 #include <print>
 #include <stdlib.h>
-#include <curl/curl.h>
-#include <string_view>
+#include <string>
 #include <vector>
+#include <curl/curl.h>
 
 int main(int argc, char *argv[])
 {
     CURL *curl_handle;
     CURLcode curl_res;
     long http_code;
-    std::vector<std::string_view> wordlist;
+    std::vector<std::string> wordlist;
 
-    std::println("scoutdir -- The free directory bruteforcer");
+    std::println("                            __      .___.__        \n"
+"  ______ ____  ____  __ ___/  |_  __| _/|__|______ \n"
+" /  ___// ___\\/  _ \\|  |  \\   __\\/ __ | |  \\_  __ \\\n"
+" \\___ \\  \\__(  <_> )  |  /|  | / /_/ | |  ||  | \\/\n"
+"/____  >\\___  >____/|____/ |__| \\____ | |__||__|   \n"
+"     \\/     \\/                       \\/            ");
+    std::println("=====================================================\n"
+    "Free and open-source directory bruteforcer.\n");
 
     if (argc <= 1) {
         std::println("Maybe try with an option? Use -h to list them all.");
@@ -22,7 +29,7 @@ int main(int argc, char *argv[])
 
     curl_handle = curl_easy_init();
     if (not curl_handle) {
-        std::println(stderr, "ERROR: Could not initialize CURL handle.");
+        std::println(stderr, "\033[1;31mERROR\033[0m: Could not initialize CURL handle.");
         return EXIT_FAILURE;
     }
 
@@ -39,26 +46,39 @@ int main(int argc, char *argv[])
 
             while (file >> ln)
                 wordlist.push_back(ln);
+
+            std::println("Wordlist: {}", argv[i + 1]);
+            std::println("Total words: {}\n", wordlist.size());
         } else if (std::strcmp(argv[i], "-u") == 0) {
-            curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "HEAD");
-            curl_easy_setopt(curl_handle, CURLOPT_URL, argv[i + 1]);
-            curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-            curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-            curl_res = curl_easy_perform(curl_handle);
-            if (curl_res != CURLE_OK) {
-                std::println(stderr, "ERROR: {}", curl_easy_strerror(curl_res));
-                return EXIT_FAILURE;
-            }
-
             if (wordlist.empty()) {
-                std::println(stderr, "ERROR: It looks like no wordlist has been provided."
+                std::println(stderr, "\033[1;31mERROR\033[0m: It looks like no wordlist has been provided."
                 "Try again with -w <pathname>.");
                 return EXIT_FAILURE;
             }
 
-            curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-            std::println("FOUND: {} ({})", argv[i + 1], http_code);
+            curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "HEAD");
+            curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+            for (auto &word : wordlist) {
+                std::string new_url = argv[i + 1];
+                new_url += word;
+                curl_easy_setopt(curl_handle, CURLOPT_URL, new_url.c_str());
+
+                curl_res = curl_easy_perform(curl_handle);
+                if (curl_res != CURLE_OK) {
+                    std::println(stderr, "\033[1;31mERROR\033[0m: {}", curl_easy_strerror(curl_res));
+                    return EXIT_FAILURE;
+                }
+
+                curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+                if (http_code != 404)
+                    std::println("\33[2K\r\033[1;32mFOUND\033[0m: {} ({})", new_url.c_str(), http_code);
+                else
+                    std::print("\33[2K\r\033[0;90mNOT FOUND: {} ({})\033[0m", new_url, 404);
+                std::fflush(stdout);
+            }
         }
     }
 
