@@ -1,6 +1,7 @@
 CompileFlags:
     Add:
-        - -std=c11
+        - -xc++
+        - -std=c++23
         - -Wall
         - -Wextra
         - -Wpedantic
