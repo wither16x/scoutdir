@@ -1,17 +1,2 @@
-CompileFlags:
-    Add:
-        - -xc++
-        - -std=c++23
-        - -Wall
-        - -Wextra
-        - -Wpedantic
-        - -Wshadow
-        - -Wundef
-        - -Wunused
-        - -Wcast-qual
-        - -Wconversion
-        - -Wsign-conversion
-        - -Wformat=2
-
 InlayHints:
     Enabled: No

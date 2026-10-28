@@ -1,17 +1,18 @@
+#include "curl_context.h"
+#include "http.h"
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
 #include <fstream>
 #include <print>
 #include <string>
+#include <utility>
 #include <vector>
 #include <curl/curl.h>
 
 int main(int argc, char *argv[])
 {
-    CURL *curl_handle;
-    CURLcode curl_res;
-    long http_code;
+    CURLContext curl;
     std::vector<std::string> wordlist;
 
     std::println("                            __      .___.__        \n"
@@ -26,12 +27,6 @@ int main(int argc, char *argv[])
     if (argc <= 1) {
         std::println("Maybe try with an option? Use -h to list them all.");
         return EXIT_SUCCESS;
-    }
-
-    curl_handle = curl_easy_init();
-    if (not curl_handle) {
-        std::println(stderr, "\033[1;31mERROR\033[0m: Could not initialize CURL handle.");
-        return EXIT_FAILURE;
     }
 
     for (int i = 1; i < argc; i++) {
@@ -57,33 +52,19 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
 
-            /* I used CURLOPT_CUSTOMREQUEST "HEAD" before, but the curl docs say that
-            * without this option, curl expects a body and could keep blocked */
-            curl_easy_setopt(curl_handle, CURLOPT_NOBODY, 1l);
-            curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-            curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
             for (auto &word : wordlist) {
                 std::string new_url = argv[i + 1];
                 new_url += word;
-                curl_easy_setopt(curl_handle, CURLOPT_URL, new_url.c_str());
 
-                curl_res = curl_easy_perform(curl_handle);
-                if (curl_res != CURLE_OK)
-                    std::println(stderr, "\033[1;31mERROR\033[0m: {}", curl_easy_strerror(curl_res));
-
-                curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-
-                if (http_code != 404)
-                    std::println("\33[2K\r\033[1;32mFOUND\033[0m: {} ({})", new_url.c_str(), http_code);
+                HTTPResponseCode response = curl.request(new_url);
+                if (response != HTTPResponseCode::PageNotFound)
+                    std::println("\33[2K\r\033[1;32mFOUND\033[0m: {} ({})", new_url, std::to_underlying(response));
                 else
                     std::print("\33[2K\r\033[0;90mNOT FOUND: {} ({})\033[0m", new_url, 404);
                 std::fflush(stdout);
             }
         }
     }
-
-    curl_easy_cleanup(curl_handle);
 
     return EXIT_SUCCESS;
 }
