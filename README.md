@@ -1,4 +1,5 @@
 # scoutdir
+![preview](assets/preview.png)
 A free and open-source web directory bruteforcer.
 
 ## Build instructions
